@@ -73,7 +73,5 @@ jobs:
 
       - name: Check formatting
         run: |
-          find include src tests \
-            -type f \( -name '*.cpp' -o -name '*.h' \) \
-            -print0 |
+          git ls-files -z -- '*.cpp' '*.h' |
           xargs -0 -r clang-format --dry-run --Werror
