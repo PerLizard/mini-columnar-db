@@ -1,0 +1,79 @@
+
+name: C++ CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.compiler }} / ${{ matrix.build_type }}
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: gcc
+            build_type: Debug
+            cxx: g++
+            sanitizers: "ON"
+
+          - compiler: gcc
+            build_type: Release
+            cxx: g++
+            sanitizers: "OFF"
+
+          - compiler: clang
+            build_type: Debug
+            cxx: clang++
+            sanitizers: "OFF"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ninja-build cmake g++ clang
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DENABLE_SANITIZERS=${{ matrix.sanitizers }}
+
+      - name: Build
+        run: cmake --build build --parallel 2
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
+
+  formatting:
+    name: clang-format
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Check formatting
+        run: |
+          find include src tests \
+            -type f \( -name '*.cpp' -o -name '*.h' \) \
+            -print0 |
+          xargs -0 -r clang-format --dry-run --Werror
