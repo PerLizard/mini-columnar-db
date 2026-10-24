@@ -49,7 +49,7 @@ if(BUILD_TESTING)
     FetchContent_MakeAvailable(googletest)
 
     add_executable(mini_db_tests
-        tests/basic_test.cpp
+        tests/column_test.cpp
     )
 
     target_link_libraries(mini_db_tests PRIVATE

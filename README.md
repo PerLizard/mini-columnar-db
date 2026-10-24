@@ -1,0 +1,1 @@
+![C++ CI](https://github.com/PerLizard/mini-columnar-db/actions/workflows/ci.yml/badge.svg)
