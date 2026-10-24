@@ -1,10 +1,10 @@
 
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <typeinfo>
 #include <unordered_map>
 
 #include "Column.h"
@@ -28,10 +28,11 @@ class Table {
 
 template <typename T>
 void Table::addColumn(const std::string& name) {
-    if (hasColumn(name)) {
+    auto [it, inserted] = columns_.try_emplace(name, std::make_unique<Column<T>>());
+
+    if (!inserted) {
         throw std::invalid_argument("Column already exists: " + name);
     }
-    columns_[name] = std::make_unique<Column<T>>();
 }
 
 template <typename T>
