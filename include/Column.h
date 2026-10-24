@@ -4,16 +4,18 @@
 #include <cstddef>
 #include <vector>
 
+#include "IColumn.h"
+
 template <typename T>
-class Column {
+class Column : public IColumn {
    public:
     void append(const T& value);
 
     const T& get(std::size_t index) const;
 
-    std::size_t size() const noexcept;
+    std::size_t size() const noexcept override;
 
-    bool empty() const noexcept;
+    bool empty() const noexcept override;
 
    private:
     std::vector<T> data_;
