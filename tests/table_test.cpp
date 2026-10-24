@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-
 #include "Table.h"
+
+#include <gtest/gtest.h>
 
 TEST(TableTest, InitiallyEmpty) {
     Table table;
