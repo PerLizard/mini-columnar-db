@@ -9,4 +9,5 @@ class IColumn {
 
     virtual std::size_t size() const noexcept = 0;
     virtual bool empty() const noexcept = 0;
+    virtual void popBack() noexcept = 0;
 };
