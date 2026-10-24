@@ -17,6 +17,8 @@ class Column : public IColumn {
 
     bool empty() const noexcept override;
 
+    void popBack() noexcept override;
+
    private:
     std::vector<T> data_;
 };
@@ -36,4 +38,11 @@ std::size_t Column<T>::size() const noexcept {
 template <typename T>
 bool Column<T>::empty() const noexcept {
     return data_.empty();
+}
+
+template <typename T>
+void Column<T>::popBack() noexcept {
+    if (!data_.empty()) {
+        data_.pop_back();
+    }
 }
