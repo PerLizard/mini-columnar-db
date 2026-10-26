@@ -21,7 +21,7 @@ class Table {
     void addColumn(const std::string& name);
 
     template <typename T>
-    Column<T>& getColumn(const std::string& name);
+    const Column<T>& getColumn(const std::string& name) const;
 
     std::size_t columnCount() const noexcept;
 
@@ -49,6 +49,10 @@ void Table::addColumn(const std::string& name) {
         throw std::invalid_argument("Column already exists: " + name);
     }
 
+    if (rowCount() != 0) {
+        throw std::logic_error("Cannot add columns to a non-empty table");
+    }
+
     const std::size_t index = columns_.size();
 
     columns_.push_back(std::make_unique<Column<T>>());
@@ -62,14 +66,14 @@ void Table::addColumn(const std::string& name) {
 }
 
 template <typename T>
-Column<T>& Table::getColumn(const std::string& name) {
+const Column<T>& Table::getColumn(const std::string& name) const {
     auto it = column_indices_.find(name);
 
     if (it == column_indices_.end()) {
         throw std::out_of_range("Column not found: " + name);
     }
 
-    return dynamic_cast<Column<T>&>(*columns_[it->second]);
+    return dynamic_cast<const Column<T>&>(*columns_[it->second]);
 }
 
 inline std::size_t Table::columnCount() const noexcept { return columns_.size(); }
