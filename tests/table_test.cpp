@@ -6,8 +6,8 @@
 #include <utility>
 
 namespace {
-static_assert(std::is_same_v<decltype(std::declval<Table&>().getColumn<int>("column")),
-                             const Column<int>&>);
+static_assert(
+    std::is_same_v<decltype(std::declval<Table&>().getColumn<int>("column")), const Column<int>&>);
 static_assert(std::is_same_v<decltype(std::declval<const Table&>().getColumn<int>("column")),
                              const Column<int>&>);
 
