@@ -1,6 +1,4 @@
 #include "Projection.h"
-#include "Filter.h"
-#include "Table.h"
 
 #include <gtest/gtest.h>
 
@@ -8,6 +6,9 @@
 #include <cstddef>
 #include <stdexcept>
 #include <string>
+
+#include "Filter.h"
+#include "Table.h"
 
 namespace {
 class ProjectionTest : public ::testing::Test {

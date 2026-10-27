@@ -58,9 +58,8 @@ TEST(FilterTest, StringPredicateAcceptsConstReference) {
     column.append("apple");
     column.append("");
 
-    const auto indices = filterIndices(column, [](const std::string& value) {
-        return value.size() >= 4;
-    });
+    const auto indices =
+        filterIndices(column, [](const std::string& value) { return value.size() >= 4; });
 
     EXPECT_EQ(indices, (std::vector<std::size_t>{0, 2}));
 }
@@ -72,9 +71,8 @@ TEST(FilterTest, LambdaCapturesThreshold) {
     }
     int threshold = 7;
 
-    const auto indices = filterIndices(column, [threshold](int value) {
-        return value > threshold;
-    });
+    const auto indices =
+        filterIndices(column, [threshold](int value) { return value > threshold; });
 
     EXPECT_EQ(indices, (std::vector<std::size_t>{1, 3}));
 }
@@ -130,9 +128,8 @@ TEST(FilterTest, PreservesOriginalValues) {
         column.append(value);
     }
 
-    const auto indices = filterIndices(column, [](const std::string& value) {
-        return value == "pear";
-    });
+    const auto indices =
+        filterIndices(column, [](const std::string& value) { return value == "pear"; });
 
     EXPECT_EQ(indices, (std::vector<std::size_t>{0, 3}));
     ASSERT_EQ(column.size(), values.size());

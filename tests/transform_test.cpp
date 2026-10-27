@@ -1,8 +1,4 @@
 #include "Transform.h"
-#include "Aggregate.h"
-#include "Filter.h"
-#include "Projection.h"
-#include "Table.h"
 
 #include <gtest/gtest.h>
 
@@ -13,6 +9,11 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "Aggregate.h"
+#include "Filter.h"
+#include "Projection.h"
+#include "Table.h"
 
 namespace {
 template <typename T>
@@ -33,13 +34,11 @@ void expectValues(const Column<T>& column, std::initializer_list<T> values) {
     }
 }
 
-constexpr auto multiply = [](const double& price, const int& volume) {
-    return price * volume;
-};
-static_assert(std::is_same_v<decltype(transformColumns(std::declval<const Column<double>&>(),
-                                                     std::declval<const Column<int>&>(),
-                                                     multiply)),
-                             Column<double>>);
+constexpr auto multiply = [](const double& price, const int& volume) { return price * volume; };
+static_assert(
+    std::is_same_v<decltype(transformColumns(std::declval<const Column<double>&>(),
+                                             std::declval<const Column<int>&>(), multiply)),
+                   Column<double>>);
 }  // namespace
 
 TEST(TransformTest, EmptyColumnsReturnEmptyResultWithoutCallingOperation) {
@@ -102,9 +101,8 @@ TEST(TransformTest, SupportsLambdaWithCapture) {
     const auto right = makeColumn<int>({3, 4});
     const int offset = 10;
 
-    const auto result = transformColumns(left, right, [offset = offset](int a, int b) {
-        return a + b + offset;
-    });
+    const auto result =
+        transformColumns(left, right, [offset = offset](int a, int b) { return a + b + offset; });
 
     expectValues(result, {14, 16});
 }
@@ -115,8 +113,7 @@ TEST(TransformTest, CopiesConstReferenceResultsAndOutlivesSourceColumns) {
         const auto left = makeColumn<std::string>({std::string(100, 'a'), "short"});
         const auto right = makeColumn<std::string>({"small", std::string(100, 'b')});
         auto transformed = transformColumns(
-            left, right,
-            [](const std::string& a, const std::string& b) -> const std::string& {
+            left, right, [](const std::string& a, const std::string& b) -> const std::string& {
                 return a.size() > b.size() ? a : b;
             });
         static_assert(std::is_same_v<decltype(transformed), Column<std::string>>);

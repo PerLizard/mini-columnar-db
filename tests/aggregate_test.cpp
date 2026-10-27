@@ -1,6 +1,4 @@
 #include "Aggregate.h"
-#include "Filter.h"
-#include "Table.h"
 
 #include <gtest/gtest.h>
 
@@ -11,6 +9,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "Filter.h"
+#include "Table.h"
 
 namespace {
 class AggregateTest : public ::testing::Test {
