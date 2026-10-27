@@ -46,10 +46,12 @@ TEST(SumWhereStandaloneTest, EmptyColumnsReturnZeroWithoutCallingPredicate) {
     const Column<double> values;
     int calls = 0;
 
-    EXPECT_DOUBLE_EQ(sumWhere(filter, values, [&calls](int) {
-        ++calls;
-        return true;
-    }), 0.0);
+    EXPECT_DOUBLE_EQ(sumWhere(filter, values,
+                              [&calls](int) {
+                                  ++calls;
+                                  return true;
+                              }),
+                     0.0);
     EXPECT_EQ(calls, 0);
 }
 
@@ -91,9 +93,8 @@ TEST(SumWhereStandaloneTest, SupportsStringFilterAndDoubleValues) {
         values.append(value);
     }
 
-    const auto result = sumWhere(filter, values, [](const std::string& symbol) {
-        return symbol == "A";
-    });
+    const auto result =
+        sumWhere(filter, values, [](const std::string& symbol) { return symbol == "A"; });
 
     EXPECT_NEAR(result, 0.3, 1e-12);
 }
