@@ -54,6 +54,7 @@ if(BUILD_TESTING)
         tests/filter_test.cpp
         tests/projection_test.cpp
         tests/table_test.cpp
+        tests/transform_test.cpp
     )
 
     target_link_libraries(mini_db_tests PRIVATE
