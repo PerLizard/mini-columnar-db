@@ -33,3 +33,20 @@ std::unordered_map<Key, Value> groupSumSelected(const Column<Key>& keys,
     }
     return groups;
 }
+
+template <typename FilterT, typename ValueT, typename Predicate>
+    requires((std::is_integral_v<ValueT> && !std::is_same_v<ValueT, bool>) ||
+             std::is_floating_point_v<ValueT>)
+ValueT sumWhere(const Column<FilterT>& filterColumn, const Column<ValueT>& valueColumn,
+                Predicate predicate) {
+    if (filterColumn.size() != valueColumn.size()) {
+        throw std::invalid_argument("Columns have different sizes");
+    }
+    ValueT result{};
+    for (std::size_t i = 0; i < filterColumn.size(); ++i) {
+        if (predicate(filterColumn.get(i))) {
+            result += valueColumn.get(i);
+        }
+    }
+    return result;
+}
