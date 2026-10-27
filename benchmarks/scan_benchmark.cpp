@@ -17,8 +17,8 @@ constexpr std::array<std::size_t, 3> rowCounts{100'000, 1'000'000, 10'000'000};
 constexpr std::size_t warmups = 3;
 constexpr std::size_t repetitions = 24;
 constexpr unsigned seed = 42;
-constexpr std::array<const char*, 4> names{
-    "A row scan", "B column scan", "C operators", "D sumWhere"};
+constexpr std::array<const char*, 4> names{"A row scan", "B column scan", "C operators",
+                                           "D sumWhere"};
 // Generate all 24 permutations: each variant occupies each position six times.
 constexpr auto orders = [] {
     std::array<std::array<std::size_t, 4>, repetitions> result{};
@@ -95,8 +95,7 @@ void benchmark(const std::vector<Trade>& rows, const Column<double>& prices,
         std::sort(samples.begin(), samples.end());
         const double milliseconds = percentile(samples, 0.5);
         std::cout << names[variant] << ": rows=" << rows.size() << ", matched=" << matched
-                  << ", p25_ms=" << percentile(samples, 0.25)
-                  << ", median_ms=" << milliseconds
+                  << ", p25_ms=" << percentile(samples, 0.25) << ", median_ms=" << milliseconds
                   << ", p75_ms=" << percentile(samples, 0.75) << ", million_rows/s="
                   << static_cast<double>(rows.size()) / (milliseconds * 1000.0)
                   << ", expected_sum=" << std::setprecision(17) << expected
@@ -137,8 +136,8 @@ void runSize(std::size_t rowCount) {
             throw std::runtime_error("Input representations differ");
         }
     }
-    std::cout << "sizeof(Trade)=" << sizeof(Trade) << ", seed=" << seed
-              << ", warmups=" << warmups << ", repetitions=" << repetitions << '\n';
+    std::cout << "sizeof(Trade)=" << sizeof(Trade) << ", seed=" << seed << ", warmups=" << warmups
+              << ", repetitions=" << repetitions << '\n';
     benchmark(rows, prices, volumes, 90000.0);
     benchmark(rows, prices, volumes, 10000.0);
 }
