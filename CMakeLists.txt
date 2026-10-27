@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(ENABLE_SANITIZERS "Enable ASan and UBSan" OFF)
+option(BUILD_BENCHMARKS "Build scan benchmark (Release, without sanitizers)" OFF)
 
 add_library(mini_db_lib INTERFACE)
 target_include_directories(mini_db_lib INTERFACE
@@ -36,6 +37,22 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 include(CTest)
+
+if(BUILD_BENCHMARKS)
+    if(ENABLE_SANITIZERS OR NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+        message(FATAL_ERROR "Benchmarks require CMAKE_BUILD_TYPE=Release and ENABLE_SANITIZERS=OFF")
+    endif()
+    add_executable(mini_db_benchmark
+        benchmarks/scan_benchmark.cpp
+        benchmarks/scan_queries.cpp
+    )
+    target_link_libraries(mini_db_benchmark PRIVATE mini_db_lib)
+    set_property(TARGET mini_db_benchmark PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(mini_db_benchmark PRIVATE -fno-lto)
+        target_link_options(mini_db_benchmark PRIVATE -fno-lto)
+    endif()
+endif()
 
 if(BUILD_TESTING)
     include(FetchContent)

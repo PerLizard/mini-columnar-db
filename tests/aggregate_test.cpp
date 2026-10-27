@@ -14,6 +14,21 @@
 #include "Table.h"
 
 namespace {
+class SumWhereTest : public ::testing::Test {
+   protected:
+    void SetUp() override {
+        for (int value : {3, 1, 4, 2}) {
+            filter.append(value);
+        }
+        for (int value : {10, -4, 7, -2}) {
+            values.append(value);
+        }
+    }
+
+    Column<int> filter;
+    Column<int> values;
+};
+
 class AggregateTest : public ::testing::Test {
    protected:
     void SetUp() override {
@@ -25,6 +40,113 @@ class AggregateTest : public ::testing::Test {
     Column<int> column;
 };
 }  // namespace
+
+TEST(SumWhereStandaloneTest, EmptyColumnsReturnZeroWithoutCallingPredicate) {
+    const Column<int> filter;
+    const Column<double> values;
+    int calls = 0;
+
+    EXPECT_DOUBLE_EQ(sumWhere(filter, values,
+                              [&calls](int) {
+                                  ++calls;
+                                  return true;
+                              }),
+                     0.0);
+    EXPECT_EQ(calls, 0);
+}
+
+TEST_F(SumWhereTest, MismatchedSizesThrowWithoutCallingPredicate) {
+    values.popBack();
+    const Column<int> empty;
+    int calls = 0;
+    auto predicate = [&calls](int) {
+        ++calls;
+        return true;
+    };
+
+    EXPECT_THROW(sumWhere(filter, values, predicate), std::invalid_argument);
+    EXPECT_THROW(sumWhere(values, filter, predicate), std::invalid_argument);
+    EXPECT_THROW(sumWhere(empty, values, predicate), std::invalid_argument);
+    EXPECT_THROW(sumWhere(filter, empty, predicate), std::invalid_argument);
+    EXPECT_EQ(calls, 0);
+}
+
+TEST_F(SumWhereTest, SumsAllMatches) {
+    EXPECT_EQ(sumWhere(filter, values, [](int value) { return value > 0; }), 11);
+}
+
+TEST_F(SumWhereTest, SumsOnlyPartialMatches) {
+    EXPECT_EQ(sumWhere(filter, values, [](int value) { return value >= 3; }), 17);
+}
+
+TEST_F(SumWhereTest, NoMatchesReturnZero) {
+    EXPECT_EQ(sumWhere(filter, values, [](int value) { return value > 4; }), 0);
+}
+
+TEST(SumWhereStandaloneTest, SupportsStringFilterAndDoubleValues) {
+    Column<std::string> filter;
+    Column<double> values;
+    for (const auto* symbol : {"A", "B", "A", "C"}) {
+        filter.append(symbol);
+    }
+    for (double value : {0.1, 9.0, 0.2, -5.0}) {
+        values.append(value);
+    }
+
+    const auto result =
+        sumWhere(filter, values, [](const std::string& symbol) { return symbol == "A"; });
+
+    EXPECT_NEAR(result, 0.3, 1e-12);
+}
+
+TEST_F(SumWhereTest, CallsPredicateOncePerRowInOrder) {
+    std::vector<int> calls;
+
+    const auto result = sumWhere(filter, values, [&calls](int value) {
+        calls.push_back(value);
+        return value % 2 == 0;
+    });
+
+    EXPECT_EQ(calls, (std::vector<int>{3, 1, 4, 2}));
+    EXPECT_EQ(result, 5);
+}
+
+TEST_F(SumWhereTest, ExceptionStopsTraversalAndPreservesInputs) {
+    std::vector<int> calls;
+
+    try {
+        sumWhere(filter, values, [&calls](int value) {
+            calls.push_back(value);
+            if (value == 4) {
+                throw std::runtime_error("predicate failed");
+            }
+            return true;
+        });
+        FAIL() << "Expected predicate exception";
+    } catch (const std::runtime_error& error) {
+        EXPECT_STREQ(error.what(), "predicate failed");
+    }
+
+    EXPECT_EQ(calls, (std::vector<int>{3, 1, 4}));
+    const std::array<int, 4> originalFilter{3, 1, 4, 2};
+    const std::array<int, 4> originalValues{10, -4, 7, -2};
+    ASSERT_EQ(filter.size(), originalFilter.size());
+    ASSERT_EQ(values.size(), originalValues.size());
+    for (std::size_t i = 0; i < originalFilter.size(); ++i) {
+        EXPECT_EQ(filter.get(i), originalFilter[i]);
+        EXPECT_EQ(values.get(i), originalValues[i]);
+    }
+}
+
+TEST_F(SumWhereTest, MatchesFilterIndicesThenSumSelected) {
+    // Cover no matches, partial matches and all matches with the same inputs.
+    for (int threshold : {0, 2, 4}) {
+        auto predicate = [threshold](int value) { return value > threshold; };
+        const auto indices = filterIndices(filter, predicate);
+
+        EXPECT_EQ(sumWhere(filter, values, predicate), sumSelected(values, indices));
+    }
+}
 
 TEST_F(AggregateTest, EmptySelectionReturnsZeroForNonEmptyColumn) {
     EXPECT_EQ(sumSelected(column, {}), 0);
