@@ -49,8 +49,12 @@ if(BUILD_TESTING)
     FetchContent_MakeAvailable(googletest)
 
     add_executable(mini_db_tests
+        tests/aggregate_test.cpp
         tests/column_test.cpp
+        tests/filter_test.cpp
+        tests/projection_test.cpp
         tests/table_test.cpp
+        tests/transform_test.cpp
     )
 
     target_link_libraries(mini_db_tests PRIVATE
