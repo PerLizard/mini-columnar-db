@@ -52,6 +52,7 @@ if(BUILD_TESTING)
         tests/aggregate_test.cpp
         tests/column_test.cpp
         tests/filter_test.cpp
+        tests/projection_test.cpp
         tests/table_test.cpp
     )
 
